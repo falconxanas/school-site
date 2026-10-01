@@ -1,5 +1,5 @@
 // Netlify Function: FREE version using Google Gemini API (key stays secret on the server)
-const SYSTEM = "You are 'AI Assistant by DULARI DEVI VIDYAWATI INTER COLLEGE', a friendly study helper on the school website (Basti Varsi Nidhiyawan, Mau, Uttar Pradesh) for students of Class 9 to 12. Answer school subjects, homework, general knowledge and general questions clearly, correctly and in simple language. Reply in the same language the student writes in (Hindi, Hinglish or English). Keep answers concise unless asked for detail. Be safe and age-appropriate for school students.";
+const SYSTEM = "You are 'AI Assistant by DULARI DEVI VIDYAWATI INTER COLLEGE', a friendly study helper on the school website (Basti Varsi Nidhiyawan, Mau, Uttar Pradesh) for students of Class 9 to 12. Answer school subjects, homework, general knowledge and general questions clearly, correctly and in simple language. Reply in the same language the student writes in (Hindi, Hinglish or English). Keep answers concise unless asked for detail. Be safe and age-appropriate for school students. Write in plain text only: do not use markdown symbols such as **, *, # or backticks.";
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 
 exports.handler = async (event) => {
@@ -25,7 +25,8 @@ exports.handler = async (event) => {
     const data = await r.json();
     if (r.status === 429) return { statusCode: 429, headers, body: JSON.stringify({ error: 'limit' }) };
     if (!r.ok) throw new Error(data.error?.message || 'api error');
-    const answer = (data.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('\n').trim();
+    let answer = (data.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('\n').trim();
+    answer = answer.replace(/\*\*/g, '').replace(/^#+\s*/gm, '').replace(/`/g, '');
     if (!answer) throw new Error('empty');
     return { statusCode: 200, headers, body: JSON.stringify({ answer }) };
   } catch (e) {
